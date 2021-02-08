@@ -31,11 +31,31 @@ float crab_vector2_dot(const vector2* a, const vector2* b)
 	return a->x * b->x + a->y * b->y;
 }
 
+float crab_vector2_cross(const vector2* a, const vector2* b)
+{
+	return a->x * b->y - a->y * b->x;
+}
+
 float crab_vector2_distance(const vector2* a)
 {
 	return (float)sqrt(a->x * a->x + a->y * a->y);
 }
 
+int crab_vector2_in_triangle(const vector2* p, const vector2* a, const vector2* b, const vector2* c)
+{
+	// https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle
+	float d1, d2, d3;
+	int has_neg, has_pos;
+
+    d1 = (p->x - b->x) * (a->y - b->y) - (a->x - b->x) * (p->y - b->y);
+    d2 = (p->x - c->x) * (b->y - c->y) - (b->x - c->x) * (p->y - c->y);
+    d3 = (p->x - a->x) * (c->y - a->y) - (c->x - a->x) * (p->y - a->y);
+
+    has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+	return !(has_neg && has_pos);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 const vector3* crab_vector3_add(vector3* out, const vector3* a, const vector3* b)

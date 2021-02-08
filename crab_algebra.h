@@ -11,11 +11,13 @@ typedef struct tag_vector2
 }
 vector2, *pvector2;
 
-const vector2* crab_vector2_add(vector2* v, const vector2* a, const vector2* b);
-const vector2* crab_vector2_sub(vector2* v, const vector2* a, const vector2* b);
-const vector2* crab_vector2_normalized(vector2* v, const vector2* a);
+const vector2* crab_vector2_add(vector2* out, const vector2* a, const vector2* b);
+const vector2* crab_vector2_sub(vector2* out, const vector2* a, const vector2* b);
+const vector2* crab_vector2_normalized(vector2* out, const vector2* a);
 float crab_vector2_dot(const vector2* a, const vector2* b);
+float crab_vector2_cross(const vector2* a, const vector2* b);
 float crab_vector2_distance(const vector2* a);
+int crab_vector2_in_triangle(const vector2* p, const vector2* a, const vector2* b, const vector2* c);
 
 
 ///////////////////////////////////////////////////////////////////////////////

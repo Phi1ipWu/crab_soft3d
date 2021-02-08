@@ -22,18 +22,29 @@ void destroy_renderer(renderer* r)
 }
 
 
-void test_render1(renderer* r)
+void test_triangle(renderer* r)
 {
 	int x, y;
-	for (x = 1; x <= 200; ++x)
-		for (y = 1; y <= 200; ++y)
+	vector2 v, v1, v2, v3, v_min, v_max;
+	int c1, c2, c3;
+
+	v1.x = rand() % r->screen_sx, v1.y = rand() % r->screen_sy;
+	v2.x = rand() % r->screen_sx, v2.y = rand() % r->screen_sy;
+	v3.x = rand() % r->screen_sx, v3.y = rand() % r->screen_sy;
+	c1 = 0xFFFF0000;
+	c2 = 0xFF00FF00;
+	c3 = 0xFF0000FF;
+
+	v_min.x = min(v1.x, min(v2.x, v3.x));
+	v_min.y = min(v1.y, min(v2.y, v3.y));
+	v_max.x = max(v1.x, max(v2.x, v3.x));
+	v_max.y = max(v1.y, max(v2.y, v3.y));
+	for (x = v_min.x; x <= v_max.x; ++x)
+		for (y = v_min.y; y <= v_max.y; ++y)
 		{
-			vector2 v1, v2, v3;
-			v1.x = 100, v1.y = 100;
-			v2.x = x, v2.y = y;
-			crab_vector2_sub(&v3, &v2, &v1);
-
-
+			v.x = x, v.y = y;
+			if (crab_vector2_in_triangle(&v, &v1, &v2, &v3))
+				r->draw_point(x, y, 0xFFFFFF00);
 		}
 }
 
@@ -45,43 +56,7 @@ void begin_render(renderer* r)
 
 void render(renderer* r)
 {
-/*
-	//int x, y;
-	int c1, c2, c3;
-	vector2 v, v1, v2, v3, v_min, v_max;
-	v1.x = 100, v1.y = 100;
-	v2.x = 100, v2.y = 250;
-	v3.x = 400, v3.y = 250;
-	c1 = 0xFFFF0000;
-	c2 = 0xFF00FF00;
-	c3 = 0xFF0000FF;
-
-	v_min.x = min(v1.x, min(v2.x, v3.x));
-	v_min.y = min(v1.y, min(v2.y, v3.y));
-	v_max.x = max(v1.x, max(v2.x, v3.x));
-	v_max.y = max(v1.y, max(v2.y, v3.y));
-
-	for (v.x = v_min.x; v.x <= v_max.x; ++v.x)
-		for (v.y = v_min.y; v.y <= v_max.y; ++v.y)
-		{
-			vector2 temp;
-			vector2 vn1, vn2, vn3;
-			//vector2 vr1, vr2, vr3;
-			float d1, d2, d3;
-
-			crab_vector2_normalized(&vn1, crab_vector2_sub(&temp, &v1, &v));
-			crab_vector2_normalized(&vn2, crab_vector2_sub(&temp, &v2, &v));
-			crab_vector2_normalized(&vn3, crab_vector2_sub(&temp, &v3, &v));
-
-			d1 = crab_vector2_dot(&vn1, &vn2);
-			d2 = crab_vector2_dot(&vn2, &vn3);
-			d3 = crab_vector2_dot(&vn3, &vn1);
-
-			if (1)
-				r->draw_point((int)v.x, (int)v.y, 0xFF000000 | (d1 > 0 ? 0xFF0000 : 0) | (d2 > 0 ? 0xFF00 : 0) | (d3 > 0 ? 0xFF : 0));
-		}
-*/
-	test_render1(r);
+	test_triangle(r);
 }
 
 void end_render(renderer* r)
