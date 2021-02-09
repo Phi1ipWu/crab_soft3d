@@ -4,24 +4,14 @@
 #include "crab_define.h"
 
 renderer* r = 0;
-HDC g_hdc;
+void* pixel_buffer = 0;
 
 
-/*
-int _stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-{
-	matrix mat, mat1, mat2;
-
-	crab_matrix_scale(&mat1, 2, 3, 4);
-	crab_matrix_transform(&mat2, 10, 8, 6);
-	crab_matrix_mul(&mat, &mat1, &mat2);
-
-	return 0;
-}
-*/
 void DrawPoint(int x, int y, int color)
 {
-	SetPixel(g_hdc, x, y, color & 0x00FFFFFF);
+	int* buf = pixel_buffer;
+	if (y * r->screen_sx + x < r->screen_sx * r->screen_sy)
+		buf[y * r->screen_sx + x] = color;
 }
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -52,7 +42,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
     }
 
     hwnd = CreateWindow(szAppName,                  // window class name
-        TEXT("The Hello Program"), // window caption
+        TEXT("crab_soft3d"), // window caption
         WS_OVERLAPPEDWINDOW,        // window style
         CW_USEDEFAULT,              // initial x position
         CW_USEDEFAULT,              // initial y position
@@ -79,49 +69,46 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
     {
 	case WM_CREATE:
-		r = create_renderer(640, 480, DrawPoint);
+		{
+			RECT rc;
+			GetClientRect(hWnd, &rc);
+			r = create_renderer(rc.right - rc.left, rc.bottom - rc.top, DrawPoint);
+		}
 		break;
 
 	case WM_PAINT:
 		{
-			if (0)
-			{
-				g_hdc = GetDC(hWnd);
+			HDC hWndDC, hBackbufferDC;
+			HBITMAP hBitmap, hBitmapBack;
+			BITMAPINFO bm;
+			RECT rcSize;
+			BOOL bRet;
+			GetClientRect(hWnd, &rcSize);
+			hWndDC = GetDC(hWnd);
+			hBackbufferDC = CreateCompatibleDC(hWndDC);
 
-				begin_render(r);
-				render(r);
-				end_render(r);
+			bm.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+			bm.bmiHeader.biWidth = r->screen_sx;
+			bm.bmiHeader.biHeight = r->screen_sy;
+			bm.bmiHeader.biPlanes = 1;
+			bm.bmiHeader.biBitCount =32;             // four 8-bit components
+			bm.bmiHeader.biCompression = BI_RGB;
+			bm.bmiHeader.biSizeImage =r->screen_sx*r->screen_sy*4 ;
+			hBitmap = CreateDIBSection(hWndDC, &bm, DIB_RGB_COLORS, &pixel_buffer, 0, 0);
+			hBitmapBack = SelectObject(hBackbufferDC, hBitmap);
 
-				ReleaseDC(hWnd, g_hdc);
-				g_hdc = 0;
-			}
-			else
-			{
-				HDC hWndDC, hBackbufferDC;
-				HBITMAP hBackbuffer;
-				RECT rcSize;
-				BOOL bRet;
-				GetClientRect(hWnd, &rcSize);
-				hWndDC = GetDC(hWnd);
-				hBackbuffer = CreateCompatibleBitmap(hWndDC, rcSize.right - rcSize.left, rcSize.bottom - rcSize.top);
-				hBackbufferDC = CreateCompatibleDC(hWndDC);
-				SelectObject(hBackbufferDC, hBackbuffer);
-				g_hdc = hBackbufferDC;
+			begin_render(r);
+			render(r);
+			end_render(r);
 
-				begin_render(r);
-				render(r);
-				end_render(r);
+			bRet = BitBlt(hWndDC, 0, 0, r->screen_sx, r->screen_sy,
+					hBackbufferDC, 0, 0,
+					SRCCOPY);
 
-				bRet = BitBlt(hWndDC, 0, 0, rcSize.right - rcSize.left, rcSize.bottom - rcSize.top,
-						hBackbufferDC, 0, 0,
-						SRCCOPY);
-
-				//this should be done before exiting the program:
-				ReleaseDC(hWnd, hWndDC); //retrieved device contexts are just released
-				DeleteDC(hBackbufferDC); //created device contexts must be deleted
-				DeleteObject(hBackbuffer); //created objects must be deleted
-				g_hdc = 0;
-			}
+			SelectObject(hBackbufferDC, hBitmapBack);
+			ReleaseDC(hWnd, hWndDC); //retrieved device contexts are just released
+			DeleteDC(hBackbufferDC); //created device contexts must be deleted
+			DeleteObject(hBitmap); //created objects must be deleted
 		}
 		break;
 
