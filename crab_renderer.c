@@ -27,6 +27,7 @@ void test_triangle(renderer* r)
 	int x, y;
 	vector2 vp, vp1, vp2, vp3, v_min, v_max;
 	int c1, c2, c3;
+	float area;
 
 	//v1.x = rand() % r->screen_sx, v1.y = rand() % r->screen_sy;
 	//v2.x = rand() % r->screen_sx, v2.y = rand() % r->screen_sy;
@@ -37,6 +38,8 @@ void test_triangle(renderer* r)
 	c1 = 0xFFFF0000;
 	c2 = 0xFF00FF00;
 	c3 = 0xFF0000FF;
+
+	//area = crab_vector2_triangle_area(&vp1, &vp2, &vp3);
 
 	v_min.x = min(vp1.x, min(vp2.x, vp3.x));
 	v_min.y = min(vp1.y, min(vp2.y, vp3.y));

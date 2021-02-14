@@ -4,81 +4,99 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-const vector2* crab_vector2_add(vector2* out, const vector2* a, const vector2* b)
+const vector2* crab_vector2_add(vector2* out, const vector2* v1, const vector2* v2)
 {
-	out->x = a->x + b->x;
-	out->y = a->y + b->y;
+	out->x = v1->x + v2->x;
+	out->y = v1->y + v2->y;
 	return out;
 }
 
-const vector2* crab_vector2_sub(vector2* out, const vector2* a, const vector2* b)
+const vector2* crab_vector2_sub(vector2* out, const vector2* v1, const vector2* v2)
 {
-	out->x = a->x - b->x;
-	out->y = a->y - b->y;
+	out->x = v1->x - v2->x;
+	out->y = v1->y - v2->y;
 	return out;
 }
 
-const vector2* crab_vector2_normalized(vector2* out, const vector2* a)
+const vector2* crab_vector2_normalized(vector2* out, const vector2* v)
 {
-	float dist = crab_vector2_distance(a);
-	out->x = dist > 0 ? a->x / dist : 0.0f;
-	out->y = dist > 0 ? a->y / dist : 0.0f;
+	float dist = crab_vector2_distance(v);
+	out->x = dist > 0 ? v->x / dist : 0.0f;
+	out->y = dist > 0 ? v->y / dist : 0.0f;
 	return out;
 }
 
-float crab_vector2_dot(const vector2* a, const vector2* b)
+float crab_vector2_dot(const vector2* v1, const vector2* v2)
 {
-	return a->x * b->x + a->y * b->y;
+	return v1->x * v2->x + v1->y * v2->y;
 }
 
-float crab_vector2_cross(const vector2* a, const vector2* b)
+float crab_vector2_cross(const vector2* v1, const vector2* v2)
 {
-	return a->x * b->y - a->y * b->x;
+	return v1->x * v2->y - v1->y * v2->x;
 }
 
 float crab_vector2_distance(const vector2* a)
 {
 	return (float)sqrt(a->x * a->x + a->y * a->y);
 }
-
-int crab_vector2_in_triangle(const vector2* p, const vector2* a, const vector2* b, const vector2* c)
+/*
+float crab_vector2_triangle_area(const vector2* v1, const vector2* v2, const vector2* v3)
+{
+	return ((v1->x * v2->y - v1->x * v3->y) + 
+			(v2->x * v3->y - v2->x * v1->y) +
+			(v3->x * v1->y - v3->x * v2->y)) * 0.5f;
+}
+*/
+int crab_vector2_in_triangle(const vector2* p, const vector2* v1, const vector2* v2, const vector2* v3)
 {
 	// https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle
 	float d1, d2, d3;
 	int has_neg, has_pos;
 
-    d1 = (p->x - b->x) * (a->y - b->y) - (a->x - b->x) * (p->y - b->y);
-    d2 = (p->x - c->x) * (b->y - c->y) - (b->x - c->x) * (p->y - c->y);
-    d3 = (p->x - a->x) * (c->y - a->y) - (c->x - a->x) * (p->y - a->y);
+	d1 = (p->x - v2->x) * (v1->y - v2->y) - (v1->x - v2->x) * (p->y - v2->y);
+	d2 = (p->x - v3->x) * (v2->y - v3->y) - (v2->x - v3->x) * (p->y - v3->y);
+	d3 = (p->x - v1->x) * (v3->y - v1->y) - (v3->x - v1->x) * (p->y - v1->y);
 
-    has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-    has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+	has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+	has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
 
 	return !(has_neg && has_pos);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-const vector3* crab_vector3_add(vector3* out, const vector3* a, const vector3* b)
+const vector3* crab_vector3_add(vector3* out, const vector3* v1, const vector3* v2)
 {
-	out->x = a->x + b->x;
-	out->y = a->y + b->y;
-	out->z = a->z + b->z;
+	out->x = v1->x + v2->x;
+	out->y = v1->y + v2->y;
+	out->z = v1->z + v2->z;
 
 	return out;
 }
 
-const vector3* crab_vector3_normalized(vector3* out, const vector3* a)
+const vector3* crab_vector3_normalized(vector3* out, const vector3* v)
 {
-	float dist = crab_vector3_distance(a);
-	out->x = dist > 0 ? a->x / dist : 0.0f;
-	out->y = dist > 0 ? a->y / dist : 0.0f;
-	out->z = dist > 0 ? a->z / dist : 0.0f;
+	float dist = crab_vector3_distance(v);
+	out->x = dist > 0 ? v->x / dist : 0.0f;
+	out->y = dist > 0 ? v->y / dist : 0.0f;
+	out->z = dist > 0 ? v->z / dist : 0.0f;
 	return out;
 }
 
-float crab_vector3_distance(const vector3* a)
+float crab_vector3_distance(const vector3* v)
 {
-	return (float)sqrt(a->x * a->x + a->y * a->y + a->z * a->z);
+	return (float)sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
+}
+
+const vector3* crab_vector_cross(vector3* out, const vector3* a, const vector3* b)
+{
+	//VectorRegister Vec;
+	//Vec.V[0] = Vec1.V[1] * Vec2.V[2] - Vec1.V[2] * Vec2.V[1];
+	//Vec.V[1] = Vec1.V[2] * Vec2.V[0] - Vec1.V[0] * Vec2.V[2];
+	//Vec.V[2] = Vec1.V[0] * Vec2.V[1] - Vec1.V[1] * Vec2.V[0];
+	//Vec.V[3] = 0.0f;
+	//return Vec;
+	return out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,17 +138,6 @@ const matrix* crab_matrix_mul(matrix* out, const matrix* a, const matrix* b)
 	out->m43 = a->m31 * b->m13 + a->m42 * b->m23 + a->m43 * b->m33 + a->m44 * b->m43;
 	out->m44 = a->m31 * b->m14 + a->m42 * b->m24 + a->m43 * b->m34 + a->m44 * b->m44;
 
-	return out;
-}
-
-const vector3* crab_vector_cross(vector3* out, const vector3* a, const vector3* b)
-{
-	//VectorRegister Vec;
-	//Vec.V[0] = Vec1.V[1] * Vec2.V[2] - Vec1.V[2] * Vec2.V[1];
-	//Vec.V[1] = Vec1.V[2] * Vec2.V[0] - Vec1.V[0] * Vec2.V[2];
-	//Vec.V[2] = Vec1.V[0] * Vec2.V[1] - Vec1.V[1] * Vec2.V[0];
-	//Vec.V[3] = 0.0f;
-	//return Vec;
 	return out;
 }
 
