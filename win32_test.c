@@ -80,6 +80,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			r = create_renderer(rc.right - rc.left, rc.bottom - rc.top, DrawPoint);
 		}
 		break;
+
+	case WM_ERASEBKGND:
+		return TRUE;
+
 	case WM_PAINT:
 		{
 			HDC hWndDC, hBackbufferDC;
