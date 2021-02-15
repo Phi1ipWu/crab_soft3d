@@ -4,10 +4,11 @@
 #include "crab_define.h"
 
 renderer* r = 0;
+texture* t = 0;
 void* pixel_buffer = 0;
 
 
-void DrawPoint(int x, int y, int color)
+void DrawPoint(int x, int y, unsigned int color)
 {
 	int* buf = pixel_buffer;
 	if (y * r->screen_sx + x < r->screen_sx * r->screen_sy)
@@ -76,8 +77,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			if (r)
 				destroy_renderer(r);
-
 			r = create_renderer(rc.right - rc.left, rc.bottom - rc.top, DrawPoint);
+
+			if (!t)
+				t = create_texture("bg001.bmp");
+			set_texture(r, 0, t);
 		}
 		break;
 
@@ -121,6 +125,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
     case WM_CLOSE:
+		destroy_texture(t);
 		destroy_renderer(r);
 
         DestroyWindow(hWnd);

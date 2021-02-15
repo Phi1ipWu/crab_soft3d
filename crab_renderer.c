@@ -2,7 +2,7 @@
 #include "crab_renderer.h"
 #include "crab_algebra.h"
 #include <stdlib.h>
-
+#include <stdio.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 renderer* create_renderer(int screen_sx, int screen_sy, func_draw_point func)
@@ -26,7 +26,8 @@ void test_triangle(renderer* r)
 {
 	int x, y;
 	vector2 vp, vp1, vp2, vp3, v_min, v_max;
-	int c, c1, c2, c3;
+	vector2 uv, uv1, uv2, uv3;
+	int c, c_v, c_t, c1, c2, c3;
 	float area;
 
 	//v1.x = rand() % r->screen_sx, v1.y = rand() % r->screen_sy;
@@ -38,6 +39,9 @@ void test_triangle(renderer* r)
 	c1 = 0xFFFF0000;
 	c2 = 0xFF00FF00;
 	c3 = 0xFF0000FF;
+	uv1.x = 0.0f, uv1.y = 0.0f;
+	uv2.x = 1.0f, uv2.y = 0.0f;
+	uv3.x = 0.0f, uv3.y = 1.0f;
 
 	area = crab_vector2_triangle_area(&vp1, &vp2, &vp3);
 
@@ -45,8 +49,9 @@ void test_triangle(renderer* r)
 	v_min.y = min(vp1.y, min(vp2.y, vp3.y));
 	v_max.x = max(vp1.x, max(vp2.x, vp3.x));
 	v_max.y = max(vp1.y, max(vp2.y, vp3.y));
-	for (x = v_min.x; x <= v_max.x; ++x)
-		for (y = v_min.y; y <= v_max.y; ++y)
+	for (y = v_min.y; y <= v_max.y; ++y)
+	{
+		for (x = v_min.x; x <= v_max.x; ++x)
 		{
 			vp.x = x, vp.y = y;
 			if (crab_vector2_in_triangle(&vp, &vp1, &vp2, &vp3))
@@ -58,33 +63,34 @@ void test_triangle(renderer* r)
 				area3 = crab_vector2_triangle_area(&vp, &vp1, &vp2);
 				sum = area1 + area2 + area3;
 
-				c = (0xFF << 24) | ((int)((area1 / sum) * 0xFF) << 16) | ((int)((area2 / sum) * 0xFF) << 8 ) | ((int)((area3 / sum) * 0xFF));
+				uv.x = uv1.x * (area1 / sum) + uv2.x * (area2 / sum) + uv3.x * (area3 / sum);
+				uv.y = uv1.y * (area1 / sum) + uv2.y * (area2 / sum) + uv3.y * (area3 / sum);
+
+				c_v = (0xFF << 24) | ((int)((area1 / sum) * 0xFF) << 16) | ((int)((area2 / sum) * 0xFF) << 8 ) | ((int)((area3 / sum) * 0xFF));
+				c_t = get_texture_color(r->texture_list[0], uv.x, uv.y);
+
+				c = ((((c_v >> 24) & 0xFF) + ((c_t >> 24) & 0xFF)) / 2 << 24) |
+					((((c_v >> 16) & 0xFF) + ((c_t >> 16) & 0xFF)) / 2 << 16) |
+					((((c_v >>  8) & 0xFF) + ((c_t >>  8) & 0xFF)) / 2 <<  8) |
+					((((c_v >>  0) & 0xFF) + ((c_t >>  0) & 0xFF)) / 2 <<  0);
 				r->draw_point(x, y, c);
-
-				/*
-				int x1, x2, x3, y1, y2, y3;
-				float u1, u2, u3, v1, v2, v3;
-				x1 = abs(x - (int)vp1.x);
-				x2 = abs(x - (int)vp2.x);
-				x3 = abs(x - (int)vp3.x);
-				y1 = abs(y - (int)vp1.y);
-				y2 = abs(y - (int)vp2.y);
-				y3 = abs(y - (int)vp3.y);
-
-				u1 = 1.f - (x1 * 1.f / (x1 + x2 + x3));
-				u2 = 1.f - (x2 * 1.f / (x1 + x2 + x3));
-				u3 = 1.f - (x3 * 1.f / (x1 + x2 + x3));
-				v1 = 1.f - (y1 * 1.f / (y1 + y2 + y3));
-				v2 = 1.f - (y2 * 1.f / (y1 + y2 + y3));
-				v3 = 1.f - (y3 * 1.f / (y1 + y2 + y3));
-
-				r->draw_point(x, y, 0xFF |
-					(int)(((c1 & 0xFF0000) * (u1 + v1) / 0.5f) + ((c2 & 0xFF0000) * (u2 + v2) / 0.5f) + ((c3 & 0xFF0000) * (u3 + v3) / 0.5f)) |
-					(int)(((c1 & 0x00FF00) * (u1 + v1) / 0.5f) + ((c2 & 0x00FF00) * (u2 + v2) / 0.5f) + ((c3 & 0x00FF00) * (u3 + v3) / 0.5f)) |
-					(int)(((c1 & 0x0000FF) * (u1 + v1) / 0.5f) + ((c2 & 0x0000FF) * (u2 + v2) / 0.5f) + ((c3 & 0x0000FF) * (u3 + v3) / 0.5f)));
-			*/
 			}
 		}
+	}
+
+	if (0 && r->texture_list[0])
+	{
+		int width, height;
+		width  = r->texture_list[0]->width;
+		height = r->texture_list[0]->height;
+		for (y = 0; y < height; ++y)
+		{
+			for (x = 0; x < width; ++x)
+			{
+				r->draw_point(x, y, r->texture_list[0]->data[y * width + x]);
+			}
+		}
+	}
 }
 
 
@@ -102,8 +108,70 @@ void end_render(renderer* r)
 {
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
-void draw_triangle(const vector3* vec_list, int* color_list)
+texture* create_texture(const char* name)
 {
+	int x, y, width, height, off_bytes;
+	unsigned short bit_count;
+	texture* tex;
+	FILE* fp = fopen(name, "rb");
+	if (!fp)
+		return 0;
+
+	fseek(fp, 10, SEEK_SET);
+	fread(&off_bytes,  sizeof(int), 1, fp);
+	fseek(fp, 18, SEEK_SET);
+	fread(&width,  sizeof(int), 1, fp);
+	fread(&height, sizeof(int), 1, fp);
+	fseek(fp, 28, SEEK_SET);
+	fread(&bit_count, sizeof(unsigned short), 1, fp);
+	if (bit_count != 24)
+	{
+		fclose(fp);
+		return 0;
+	}
+
+	tex = (texture*)malloc(sizeof(texture) + sizeof(unsigned int) * (width * height - 1));
+	tex->width = width, tex->height = height;
+
+	fseek(fp, off_bytes, SEEK_SET);
+	for (y = 0; y < height; ++y)
+		for (x = 0; x < width; ++x)
+		{
+			unsigned char c[3];
+			fread(c, sizeof(c), 1, fp);
+			tex->data[(height - y - 1) * width + x] = (0xFF << 24) | (c[2] << 16) | (c[1] << 8) | (c[0]);
+		}
 	
+	fclose(fp);
+	return tex;
+}
+
+void destroy_texture(texture* t)
+{
+	if (t)
+		free(t);
+}
+
+
+void set_texture(renderer* r, int index, texture* t)
+{
+	//assert(0 <= index && index < 4);
+	r->texture_list[index] = t;
+}
+
+unsigned int get_texture_color(texture* t, float u, float v)
+{
+	int x, y;
+	unsigned int c;
+
+	if (!t)
+		return 0xFFFFFFFF;
+
+	x = (int)(u * t->width)  % t->width;
+	y = (int)(v * t->height) % t->height;
+	
+	c = t->data[y * t->width + x];
+	return c;
 }
