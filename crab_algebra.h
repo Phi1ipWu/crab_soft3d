@@ -17,7 +17,7 @@ const vector2* crab_vector2_normalized(vector2* out, const vector2* v);
 float crab_vector2_dot(const vector2* v1, const vector2* v2);
 float crab_vector2_cross(const vector2* v1, const vector2* v2);
 float crab_vector2_distance(const vector2* v);
-//float crab_vector2_triangle_area(const vector2* v1, const vector2* v2, const vector2* v3);
+float crab_vector2_triangle_area(const vector2* v1, const vector2* v2, const vector2* v3);
 int crab_vector2_in_triangle(const vector2* p, const vector2* v1, const vector2* v2, const vector2* v3);
 
 ///////////////////////////////////////////////////////////////////////////////

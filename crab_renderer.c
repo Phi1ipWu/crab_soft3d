@@ -26,20 +26,20 @@ void test_triangle(renderer* r)
 {
 	int x, y;
 	vector2 vp, vp1, vp2, vp3, v_min, v_max;
-	int c1, c2, c3;
+	int c, c1, c2, c3;
 	float area;
 
 	//v1.x = rand() % r->screen_sx, v1.y = rand() % r->screen_sy;
 	//v2.x = rand() % r->screen_sx, v2.y = rand() % r->screen_sy;
 	//v3.x = rand() % r->screen_sx, v3.y = rand() % r->screen_sy;
 	vp1.x = 100, vp1.y = 100;
-	vp2.x = 260, vp2.y = 600;
-	vp3.x = 600, vp3.y = 260;
+	vp2.x = 230, vp2.y = 500;
+	vp3.x = 500, vp3.y = 230;
 	c1 = 0xFFFF0000;
 	c2 = 0xFF00FF00;
 	c3 = 0xFF0000FF;
 
-	//area = crab_vector2_triangle_area(&vp1, &vp2, &vp3);
+	area = crab_vector2_triangle_area(&vp1, &vp2, &vp3);
 
 	v_min.x = min(vp1.x, min(vp2.x, vp3.x));
 	v_min.y = min(vp1.y, min(vp2.y, vp3.y));
@@ -51,6 +51,17 @@ void test_triangle(renderer* r)
 			vp.x = x, vp.y = y;
 			if (crab_vector2_in_triangle(&vp, &vp1, &vp2, &vp3))
 			{
+				float area, area1, area2, area3, sum;
+				area  = crab_vector2_triangle_area(&vp1, &vp2, &vp3);
+				area1 = crab_vector2_triangle_area(&vp, &vp2, &vp3);
+				area2 = crab_vector2_triangle_area(&vp, &vp1, &vp3);
+				area3 = crab_vector2_triangle_area(&vp, &vp1, &vp2);
+				sum = area1 + area2 + area3;
+
+				c = (0xFF << 24) | ((int)((area1 / sum) * 0xFF) << 16) | ((int)((area2 / sum) * 0xFF) << 8 ) | ((int)((area3 / sum) * 0xFF));
+				r->draw_point(x, y, c);
+
+				/*
 				int x1, x2, x3, y1, y2, y3;
 				float u1, u2, u3, v1, v2, v3;
 				x1 = abs(x - (int)vp1.x);
@@ -67,13 +78,11 @@ void test_triangle(renderer* r)
 				v2 = 1.f - (y2 * 1.f / (y1 + y2 + y3));
 				v3 = 1.f - (y3 * 1.f / (y1 + y2 + y3));
 
-				//r->draw_point(x, y, 0xFF00FF00);
-				//continue;
-
 				r->draw_point(x, y, 0xFF |
 					(int)(((c1 & 0xFF0000) * (u1 + v1) / 0.5f) + ((c2 & 0xFF0000) * (u2 + v2) / 0.5f) + ((c3 & 0xFF0000) * (u3 + v3) / 0.5f)) |
 					(int)(((c1 & 0x00FF00) * (u1 + v1) / 0.5f) + ((c2 & 0x00FF00) * (u2 + v2) / 0.5f) + ((c3 & 0x00FF00) * (u3 + v3) / 0.5f)) |
 					(int)(((c1 & 0x0000FF) * (u1 + v1) / 0.5f) + ((c2 & 0x0000FF) * (u2 + v2) / 0.5f) + ((c3 & 0x0000FF) * (u3 + v3) / 0.5f)));
+			*/
 			}
 		}
 }

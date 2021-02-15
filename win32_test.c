@@ -69,13 +69,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
     {
 	case WM_CREATE:
+	case WM_SIZE:
 		{
 			RECT rc;
 			GetClientRect(hWnd, &rc);
+
+			if (r)
+				destroy_renderer(r);
+
 			r = create_renderer(rc.right - rc.left, rc.bottom - rc.top, DrawPoint);
 		}
 		break;
-
 	case WM_PAINT:
 		{
 			HDC hWndDC, hBackbufferDC;

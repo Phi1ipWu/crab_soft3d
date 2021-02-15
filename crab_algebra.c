@@ -40,14 +40,16 @@ float crab_vector2_distance(const vector2* a)
 {
 	return (float)sqrt(a->x * a->x + a->y * a->y);
 }
-/*
+
 float crab_vector2_triangle_area(const vector2* v1, const vector2* v2, const vector2* v3)
 {
-	return ((v1->x * v2->y - v1->x * v3->y) + 
-			(v2->x * v3->y - v2->x * v1->y) +
-			(v3->x * v1->y - v3->x * v2->y)) * 0.5f;
+	float a, b, c, d, e, f;
+	a = v1->x, b = v1->y;
+	c = v2->x, d = v2->y;
+	e = v3->x, f = v3->y;
+	return 0.5f * fabs(a*d + b*e + c*f - a*f - b*c - d*e);
 }
-*/
+
 int crab_vector2_in_triangle(const vector2* p, const vector2* v1, const vector2* v2, const vector2* v3)
 {
 	// https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle
