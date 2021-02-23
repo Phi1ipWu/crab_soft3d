@@ -1,6 +1,5 @@
 
 #include "crab_renderer.h"
-#include "crab_algebra.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -40,8 +39,8 @@ void test_triangle(renderer* r)
 	c2 = 0xFF00FF00;
 	c3 = 0xFF0000FF;
 	uv1.x = 0.0f, uv1.y = 0.0f;
-	uv2.x = 1.0f, uv2.y = 0.0f;
-	uv3.x = 0.0f, uv3.y = 1.0f;
+	uv2.x = 0.25f, uv2.y = 0.0f;
+	uv3.x = 0.0f, uv3.y = 0.25f;
 
 	area = crab_vector2_triangle_area(&vp1, &vp2, &vp3);
 
@@ -49,11 +48,11 @@ void test_triangle(renderer* r)
 	v_min.y = min(vp1.y, min(vp2.y, vp3.y));
 	v_max.x = max(vp1.x, max(vp2.x, vp3.x));
 	v_max.y = max(vp1.y, max(vp2.y, vp3.y));
-	for (y = v_min.y; y <= v_max.y; ++y)
+	for (y = (int)v_min.y; y <= v_max.y; ++y)
 	{
-		for (x = v_min.x; x <= v_max.x; ++x)
+		for (x = (int)v_min.x; x <= v_max.x; ++x)
 		{
-			vp.x = x, vp.y = y;
+			vp.x = (float)x, vp.y = (float)y;
 			if (crab_vector2_in_triangle(&vp, &vp1, &vp2, &vp3))
 			{
 				float area, area1, area2, area3, sum;
@@ -67,7 +66,7 @@ void test_triangle(renderer* r)
 				uv.y = uv1.y * (area1 / sum) + uv2.y * (area2 / sum) + uv3.y * (area3 / sum);
 
 				c_v = (0xFF << 24) | ((int)((area1 / sum) * 0xFF) << 16) | ((int)((area2 / sum) * 0xFF) << 8 ) | ((int)((area3 / sum) * 0xFF));
-				c_t = get_texture_color(r->texture_list[0], uv.x, uv.y);
+				c_t = texture_2d(r->texture_list[0], uv.x, uv.y);
 
 				c = ((((c_v >> 24) & 0xFF) + ((c_t >> 24) & 0xFF)) / 2 << 24) |
 					((((c_v >> 16) & 0xFF) + ((c_t >> 16) & 0xFF)) / 2 << 16) |
@@ -108,6 +107,10 @@ void end_render(renderer* r)
 {
 }
 
+///////////////////////////////////////////////////////////////////////////////
+void draw_triangles(const vector3* v, int vec_num, const unsigned int* c, int color_num, const vector2* uv, int uv_num)
+{
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 texture* create_texture(const char* name)
@@ -161,7 +164,7 @@ void set_texture(renderer* r, int index, texture* t)
 	r->texture_list[index] = t;
 }
 
-unsigned int get_texture_color(texture* t, float u, float v)
+unsigned int texture_2d(texture* t, float u, float v)
 {
 	int x, y;
 	unsigned int c;
@@ -169,9 +172,16 @@ unsigned int get_texture_color(texture* t, float u, float v)
 	if (!t)
 		return 0xFFFFFFFF;
 
-	x = (int)(u * t->width)  % t->width;
-	y = (int)(v * t->height) % t->height;
+	if (0)
+	{
+
+	}
+	else
+	{
+		x = (int)(u * t->width)  % t->width;
+		y = (int)(v * t->height) % t->height;
 	
-	c = t->data[y * t->width + x];
+		c = t->data[y * t->width + x];
+	}
 	return c;
 }

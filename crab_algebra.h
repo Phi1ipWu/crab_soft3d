@@ -21,7 +21,7 @@ float crab_vector2_triangle_area(const vector2* v1, const vector2* v2, const vec
 int crab_vector2_in_triangle(const vector2* p, const vector2* v1, const vector2* v2, const vector2* v3);
 
 ///////////////////////////////////////////////////////////////////////////////
-typedef struct tag_vector3
+typedef struct vector3
 {
 	float x, y, z;
 }

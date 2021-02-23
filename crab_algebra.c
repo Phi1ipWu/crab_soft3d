@@ -47,7 +47,7 @@ float crab_vector2_triangle_area(const vector2* v1, const vector2* v2, const vec
 	a = v1->x, b = v1->y;
 	c = v2->x, d = v2->y;
 	e = v3->x, f = v3->y;
-	return 0.5f * fabs(a*d + b*e + c*f - a*f - b*c - d*e);
+	return 0.5f * (float)fabs(a*d + b*e + c*f - a*f - b*c - d*e);
 }
 
 int crab_vector2_in_triangle(const vector2* p, const vector2* v1, const vector2* v2, const vector2* v3)
