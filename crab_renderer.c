@@ -23,73 +23,21 @@ void destroy_renderer(renderer* r)
 
 void test_triangle(renderer* r)
 {
-	int x, y;
-	vector2 vp, vp1, vp2, vp3, v_min, v_max;
-	vector2 uv, uv1, uv2, uv3;
-	int c, c_v, c_t, c1, c2, c3;
-	float area;
+	vector3 v[3];
+	unsigned int c[3];
+	vector2 uv[3];
 
-	//v1.x = rand() % r->screen_sx, v1.y = rand() % r->screen_sy;
-	//v2.x = rand() % r->screen_sx, v2.y = rand() % r->screen_sy;
-	//v3.x = rand() % r->screen_sx, v3.y = rand() % r->screen_sy;
-	vp1.x = 100, vp1.y = 100;
-	vp2.x = 230, vp2.y = 500;
-	vp3.x = 500, vp3.y = 230;
-	c1 = 0xFFFF0000;
-	c2 = 0xFF00FF00;
-	c3 = 0xFF0000FF;
-	uv1.x = 0.0f, uv1.y = 0.0f;
-	uv2.x = 0.25f, uv2.y = 0.0f;
-	uv3.x = 0.0f, uv3.y = 0.25f;
+	v[0].x = 100, v[0].y = 100, v[0].z = 0;
+	v[1].x = 230, v[1].y = 500, v[1].z = 0;
+	v[2].x = 500, v[2].y = 230, v[2].z = 0;
+	c[0] = 0xFFFF0000;
+	c[1] = 0xFF00FF00;
+	c[2] = 0xFF0000FF;
+	uv[0].x = 0.0f, uv[0].y = 0.0f;
+	uv[1].x = 2.0f, uv[1].y = 0.0f;
+	uv[2].x = 0.0f, uv[2].y = 2.0f;
 
-	area = crab_vector2_triangle_area(&vp1, &vp2, &vp3);
-
-	v_min.x = min(vp1.x, min(vp2.x, vp3.x));
-	v_min.y = min(vp1.y, min(vp2.y, vp3.y));
-	v_max.x = max(vp1.x, max(vp2.x, vp3.x));
-	v_max.y = max(vp1.y, max(vp2.y, vp3.y));
-	for (y = (int)v_min.y; y <= v_max.y; ++y)
-	{
-		for (x = (int)v_min.x; x <= v_max.x; ++x)
-		{
-			vp.x = (float)x, vp.y = (float)y;
-			if (crab_vector2_in_triangle(&vp, &vp1, &vp2, &vp3))
-			{
-				float area, area1, area2, area3, sum;
-				area  = crab_vector2_triangle_area(&vp1, &vp2, &vp3);
-				area1 = crab_vector2_triangle_area(&vp, &vp2, &vp3);
-				area2 = crab_vector2_triangle_area(&vp, &vp1, &vp3);
-				area3 = crab_vector2_triangle_area(&vp, &vp1, &vp2);
-				sum = area1 + area2 + area3;
-
-				uv.x = uv1.x * (area1 / sum) + uv2.x * (area2 / sum) + uv3.x * (area3 / sum);
-				uv.y = uv1.y * (area1 / sum) + uv2.y * (area2 / sum) + uv3.y * (area3 / sum);
-
-				c_v = (0xFF << 24) | ((int)((area1 / sum) * 0xFF) << 16) | ((int)((area2 / sum) * 0xFF) << 8 ) | ((int)((area3 / sum) * 0xFF));
-				c_t = texture_2d(r->texture_list[0], uv.x, uv.y);
-
-				c = ((((c_v >> 24) & 0xFF) + ((c_t >> 24) & 0xFF)) / 2 << 24) |
-					((((c_v >> 16) & 0xFF) + ((c_t >> 16) & 0xFF)) / 2 << 16) |
-					((((c_v >>  8) & 0xFF) + ((c_t >>  8) & 0xFF)) / 2 <<  8) |
-					((((c_v >>  0) & 0xFF) + ((c_t >>  0) & 0xFF)) / 2 <<  0);
-				r->draw_point(x, y, c);
-			}
-		}
-	}
-
-	if (0 && r->texture_list[0])
-	{
-		int width, height;
-		width  = r->texture_list[0]->width;
-		height = r->texture_list[0]->height;
-		for (y = 0; y < height; ++y)
-		{
-			for (x = 0; x < width; ++x)
-			{
-				r->draw_point(x, y, r->texture_list[0]->data[y * width + x]);
-			}
-		}
-	}
+	draw_triangles(r, v, 3, c, 3, uv, 3);
 }
 
 
@@ -108,8 +56,58 @@ void end_render(renderer* r)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void draw_triangles(const vector3* v, int vec_num, const unsigned int* c, int color_num, const vector2* uv, int uv_num)
+void draw_triangles(renderer* r, const vector3* v, int vec_num, const unsigned int* c, int color_num, const vector2* uv, int uv_num)
 {
+	int x, y;
+	vector2 vp, vp0, vp1, vp2, v_min, v_max;
+	vector2 uv0;
+	float area;
+
+	// transform
+	vp0.x = v[0].x, vp0.y = v[0].y;
+	vp1.x = v[1].x, vp1.y = v[1].y;
+	vp2.x = v[2].x, vp2.y = v[2].y;
+
+	// rasterization
+	area = crab_vector2_triangle_area(&vp0, &vp1, &vp2);
+
+	v_min.x = min(vp0.x, min(vp1.x, vp2.x));
+	v_min.y = min(vp0.y, min(vp1.y, vp2.y));
+	v_max.x = max(vp0.x, max(vp1.x, vp2.x));
+	v_max.y = max(vp0.y, max(vp1.y, vp2.y));
+	for (y = (int)v_min.y; y <= v_max.y; ++y)
+	{
+		for (x = (int)v_min.x; x <= v_max.x; ++x)
+		{
+			vp.x = (float)x, vp.y = (float)y;
+			if (crab_vector2_in_triangle(&vp, &vp0, &vp1, &vp2))
+			{
+				float area, area0, area1, area2;
+				unsigned int c_vect, c_tex0, c_out;
+
+				area  = crab_vector2_triangle_area(&vp0, &vp1, &vp2);
+				area0 = crab_vector2_triangle_area(&vp, &vp1, &vp2);
+				area1 = crab_vector2_triangle_area(&vp, &vp0, &vp2);
+				area2 = crab_vector2_triangle_area(&vp, &vp0, &vp1);
+				uv0.x = uv[0].x * (area0 / area) + uv[1].x * (area1 / area) + uv[2].x * (area2 / area);
+				uv0.y = uv[0].y * (area0 / area) + uv[1].y * (area1 / area) + uv[2].y * (area2 / area);
+
+				c_vect = (0xFF << 24) | 
+						 ((unsigned int)((area0 / area) * 0xFF) << 16) | 
+						 ((unsigned int)((area1 / area) * 0xFF) << 8 ) | 
+						 ((unsigned int)((area2 / area) * 0xFF));
+				c_vect = 0xFFFFFFFF;
+				c_tex0 = texture_2d(r->texture_list[0], uv0.x, uv0.y);
+
+				c_out =	((unsigned int)(((((c_vect >> 24) & 0xFF) / 255.f) * (((c_tex0 >> 24) & 0xFF) / 255.f)) * 255) << 24) |
+						((unsigned int)(((((c_vect >> 16) & 0xFF) / 255.f) * (((c_tex0 >> 16) & 0xFF) / 255.f)) * 255) << 16) |
+						((unsigned int)(((((c_vect >>  8) & 0xFF) / 255.f) * (((c_tex0 >>  8) & 0xFF) / 255.f)) * 255) <<  8) |
+						((unsigned int)(((((c_vect >>  0) & 0xFF) / 255.f) * (((c_tex0 >>  0) & 0xFF) / 255.f)) * 255) <<  0);
+				r->draw_point(x, y, c_out);
+
+			}
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

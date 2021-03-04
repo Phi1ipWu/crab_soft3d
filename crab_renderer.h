@@ -29,7 +29,7 @@ void render(renderer* r);
 void end_render(renderer* r);
 
 ///////////////////////////////////////////////////////////////////////////////
-void draw_triangles(const vector3* v, int vec_num, const unsigned int* c, int color_num, const vector2* uv, int uv_num);
+void draw_triangles(renderer* r, const vector3* v, int vec_num, const unsigned int* c, int color_num, const vector2* uv, int uv_num);
 
 ///////////////////////////////////////////////////////////////////////////////
 texture* create_texture(const char* name);
