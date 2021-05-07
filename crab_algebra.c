@@ -160,3 +160,21 @@ const matrix* crab_matrix_scale(matrix* out, const vector3* v)
 	out->m33 = v->z;
 	return out;
 }
+
+const matrix* crab_matrix_othro(matrix* out, float left, float right, float top, float bottom, float near, float far)
+{
+	// https://zhuanlan.zhihu.com/p/122411512
+
+	vector3 v_trans, v_scale;
+	matrix  m_trans, m_scale;
+
+	v_trans.x = -(left + right) / 2;
+	v_trans.y = -(bottom + top) / 2;
+	v_trans.z = -(near + far)   / 2;
+	v_scale.x = 2 / (right - left);
+	v_scale.y = 2 / (top - bottom);
+	v_scale.z = 2 / (near - far);
+	return crab_matrix_mul(out, 
+							crab_matrix_scale(&m_scale, &v_scale),
+							crab_matrix_transform(&m_trans, &v_trans));
+}
