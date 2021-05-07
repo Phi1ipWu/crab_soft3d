@@ -49,6 +49,6 @@ const matrix* crab_matrix_identity(matrix* out);
 const matrix* crab_matrix_mul(matrix* out, const matrix* a, const matrix* b);
 const matrix* crab_matrix_transform(matrix* out, const vector3* v);
 const matrix* crab_matrix_scale(matrix* out, const vector3* v);
-const matrix* crab_matrix_othro(matrix* out, float left, float right, float top, float bottom, float near, float far);
+
 
 #endif
